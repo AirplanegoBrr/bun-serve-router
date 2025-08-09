@@ -1,17 +1,52 @@
-import {URLPattern} from "urlpattern-polyfill";
+import { URLPattern } from "urlpattern-polyfill";
+
+class Route {
+    constructor(
+        public method: string,
+        public urlPattern: URLPattern,
+        public handler: Handler
+    ) { }
+}
+
+type Handler = (request: Request, params: URLPatternResultParams, urlPatternResult: URLPatternResult) => Response | Promise<Response>
+
 
 export class Router {
-    private routeList : Route[] = [];
+    private routeList: Route[] = [];
 
-    add(method : string, pattern : string, handler : Handler) : void {
+    add(method: string, pattern: string, handler: Handler): void {
         method = method.toUpperCase();
-        const route = new Route(method, new URLPattern({
-            pathname: pattern,
-        }), handler);
+        const RoutePattern = new URLPattern({ pathname: pattern });
+        const route = new Route(method, RoutePattern, handler);
         this.routeList.push(route);
     }
 
-    async match(request : Request) {
+    get(pattern: string, handler: Handler): void {
+        this.add("get", pattern, handler);
+    }
+    put(pattern: string, handler: Handler): void {
+        this.add("put", pattern, handler);
+    }
+    post(pattern: string, handler: Handler): void {
+        this.add("post", pattern, handler);
+    }
+    delete(pattern: string, handler: Handler): void {
+        this.add("delete", pattern, handler);
+    }
+    patch(pattern: string, handler: Handler): void {
+        this.add("patch", pattern, handler);
+    }
+    head(pattern: string, handler: Handler): void {
+        this.add("head", pattern, handler);
+    }
+    options(pattern: string, handler: Handler): void {
+        this.add("options", pattern, handler);
+    }
+    trace(pattern: string, handler: Handler): void {
+        this.add("trace", pattern, handler);
+    }
+
+    async match(request: Request) {
         for (const route of this.routeList) {
             if (request.method === route.method) {
                 const result = route.urlPattern.exec(request.url);
@@ -30,12 +65,3 @@ export class Router {
 }
 
 export type URLPatternResultParams = { [key: string]: string | undefined; };
-type Handler = (request : Request, params : URLPatternResultParams, urlPatternResult : URLPatternResult) => Response | Promise<Response>
-
-class Route {
-    constructor(
-        public method : string,
-        public urlPattern : URLPattern,
-        public handler : Handler
-    ) {}
-}
